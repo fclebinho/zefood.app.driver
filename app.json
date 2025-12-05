@@ -13,7 +13,13 @@
       "backgroundColor": "#ffffff"
     },
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "infoPlist": {
+        "NSLocationWhenInUseUsageDescription": "Precisamos da sua localizacao para mostrar aos clientes onde voce esta durante a entrega.",
+        "NSLocationAlwaysAndWhenInUseUsageDescription": "Precisamos da sua localizacao em segundo plano para rastrear entregas mesmo quando o app esta minimizado.",
+        "NSLocationAlwaysUsageDescription": "Precisamos da sua localizacao em segundo plano para rastrear entregas.",
+        "UIBackgroundModes": ["location", "fetch"]
+      }
     },
     "android": {
       "adaptiveIcon": {
@@ -21,10 +27,29 @@
         "backgroundColor": "#ffffff"
       },
       "edgeToEdgeEnabled": true,
-      "predictiveBackGestureEnabled": false
+      "predictiveBackGestureEnabled": false,
+      "permissions": [
+        "ACCESS_COARSE_LOCATION",
+        "ACCESS_FINE_LOCATION",
+        "ACCESS_BACKGROUND_LOCATION",
+        "FOREGROUND_SERVICE",
+        "FOREGROUND_SERVICE_LOCATION"
+      ]
     },
     "web": {
       "favicon": "./assets/favicon.png"
-    }
+    },
+    "plugins": [
+      [
+        "expo-location",
+        {
+          "locationAlwaysAndWhenInUsePermission": "Precisamos da sua localizacao para rastrear entregas.",
+          "locationAlwaysPermission": "Precisamos da sua localizacao em segundo plano para rastrear entregas.",
+          "locationWhenInUsePermission": "Precisamos da sua localizacao para mostrar aos clientes onde voce esta.",
+          "isIosBackgroundLocationEnabled": true,
+          "isAndroidBackgroundLocationEnabled": true
+        }
+      ]
+    ]
   }
 }
