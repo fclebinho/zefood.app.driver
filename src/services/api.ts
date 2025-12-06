@@ -1,8 +1,7 @@
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-// Use o IP da máquina para o celular conseguir conectar
-const BASE_URL = 'http://192.168.200.104:3001';
+const BASE_URL = process.env.EXPO_PUBLIC_API_URL || 'http://localhost:3001';
 const API_URL = `${BASE_URL}/api`;
 
 export { BASE_URL as API_URL }; // Export for WebSocket
