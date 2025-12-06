@@ -30,7 +30,8 @@ export function useDriverSocket({
 
     try {
       // Create socket connection using BASE_URL (without /api)
-      socket = io(BASE_URL, {
+      // Connect to /orders namespace which is where the backend gateway listens
+      socket = io(`${BASE_URL}/orders`, {
         path: '/socket.io',
         transports: ['websocket', 'polling'],
       });

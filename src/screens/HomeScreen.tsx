@@ -23,7 +23,8 @@ import { useAuth } from '../hooks/useAuth';
 import api from '../services/api';
 import { Delivery } from '../types';
 import { useDriverSocket } from '../hooks/useOrdersSocket';
-import { useLocationTracking } from '../hooks/useLocationTracking';
+// Temporarily disabled to debug crash
+// import { useLocationTracking } from '../hooks/useLocationTracking';
 
 export function HomeScreen({ navigation }: any) {
   const { driver, isOnline, toggleOnline } = useAuth();
@@ -31,11 +32,14 @@ export function HomeScreen({ navigation }: any) {
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [isTogglingOnline, setIsTogglingOnline] = useState(false);
 
-  // Location tracking - sends driver position when online
-  const { location, isTracking, error: locationError } = useLocationTracking({
-    driverId: driver?.id || null,
-    isOnline,
-  });
+  // Location tracking - temporarily disabled to debug crash
+  // const { location, isTracking, error: locationError } = useLocationTracking({
+  //   driverId: driver?.id || null,
+  //   isOnline,
+  // });
+  const location = null;
+  const isTracking = false;
+  const locationError = null;
 
   // Handle new delivery from WebSocket
   const handleNewAvailableDelivery = useCallback((order: any) => {

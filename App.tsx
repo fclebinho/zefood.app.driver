@@ -1,9 +1,9 @@
-import React from 'react';
+import React, { Component, ErrorInfo, ReactNode } from 'react';
 import { StatusBar } from 'expo-status-bar';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-import { View, Text, ActivityIndicator, StyleSheet } from 'react-native';
+import { View, Text, ActivityIndicator, StyleSheet, ScrollView } from 'react-native';
 import { AuthProvider, useAuth } from './src/hooks/useAuth';
 import {
   LoginScreen,
@@ -13,6 +13,50 @@ import {
   EarningsScreen,
   ProfileScreen,
 } from './src/screens';
+
+// Error Boundary to catch crashes
+interface ErrorBoundaryState {
+  hasError: boolean;
+  error: Error | null;
+}
+
+class ErrorBoundary extends Component<{ children: ReactNode }, ErrorBoundaryState> {
+  constructor(props: { children: ReactNode }) {
+    super(props);
+    this.state = { hasError: false, error: null };
+  }
+
+  static getDerivedStateFromError(error: Error): ErrorBoundaryState {
+    return { hasError: true, error };
+  }
+
+  componentDidCatch(error: Error, errorInfo: ErrorInfo) {
+    console.error('App crashed:', error);
+    console.error('Error info:', errorInfo);
+  }
+
+  render() {
+    if (this.state.hasError) {
+      return (
+        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', padding: 20, backgroundColor: '#fff' }}>
+          <Text style={{ fontSize: 20, fontWeight: 'bold', color: 'red', marginBottom: 10 }}>
+            App Error
+          </Text>
+          <ScrollView style={{ maxHeight: 300 }}>
+            <Text style={{ fontSize: 14, color: '#333' }}>
+              {this.state.error?.toString()}
+            </Text>
+            <Text style={{ fontSize: 12, color: '#666', marginTop: 10 }}>
+              {this.state.error?.stack}
+            </Text>
+          </ScrollView>
+        </View>
+      );
+    }
+
+    return this.props.children;
+  }
+}
 
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -35,6 +79,7 @@ function TabIcon({ name, focused }: { name: string; focused: boolean }) {
 }
 
 function MainTabs() {
+  console.log('MainTabs rendering...');
   return (
     <Tab.Navigator
       screenOptions={({ route }) => ({
@@ -71,9 +116,25 @@ function MainTabs() {
 }
 
 function AppNavigator() {
-  const { isAuthenticated, isLoading } = useAuth();
+  console.log('AppNavigator rendering...');
+
+  let authData;
+  try {
+    authData = useAuth();
+    console.log('useAuth result:', { isAuthenticated: authData.isAuthenticated, isLoading: authData.isLoading });
+  } catch (error) {
+    console.error('useAuth error:', error);
+    return (
+      <View style={styles.loadingContainer}>
+        <Text style={{ color: 'red' }}>Auth Error: {String(error)}</Text>
+      </View>
+    );
+  }
+
+  const { isAuthenticated, isLoading } = authData;
 
   if (isLoading) {
+    console.log('AppNavigator: showing loading...');
     return (
       <View style={styles.loadingContainer}>
         <ActivityIndicator size="large" color="#F97316" />
@@ -81,6 +142,8 @@ function AppNavigator() {
       </View>
     );
   }
+
+  console.log('AppNavigator: rendering navigator, isAuthenticated:', isAuthenticated);
 
   return (
     <Stack.Navigator>
@@ -109,13 +172,34 @@ function AppNavigator() {
 }
 
 export default function App() {
+  console.log('App rendering...');
+
+  // Temporary: Test if basic render works - set to true to test
+  const [testMode] = React.useState(true);
+
+  if (testMode) {
+    // Test 4: Full app with AppNavigator
+    return (
+      <ErrorBoundary>
+        <AuthProvider>
+          <NavigationContainer>
+            <StatusBar style="auto" />
+            <AppNavigator />
+          </NavigationContainer>
+        </AuthProvider>
+      </ErrorBoundary>
+    );
+  }
+
   return (
-    <AuthProvider>
-      <NavigationContainer>
-        <StatusBar style="auto" />
-        <AppNavigator />
-      </NavigationContainer>
-    </AuthProvider>
+    <ErrorBoundary>
+      <AuthProvider>
+        <NavigationContainer>
+          <StatusBar style="auto" />
+          <AppNavigator />
+        </NavigationContainer>
+      </AuthProvider>
+    </ErrorBoundary>
   );
 }
 

@@ -1,8 +1,15 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
-import * as Location from 'expo-location';
 import { io, Socket } from 'socket.io-client';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { BASE_URL } from '../services/api';
+
+// Import Location with error handling
+let Location: typeof import('expo-location') | null = null;
+try {
+  Location = require('expo-location');
+} catch (e) {
+  console.warn('expo-location not available:', e);
+}
 
 interface LocationData {
   latitude: number;
@@ -27,7 +34,7 @@ export function useLocationTracking({
   const [isTracking, setIsTracking] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const socketRef = useRef<Socket | null>(null);
-  const watchIdRef = useRef<Location.LocationSubscription | null>(null);
+  const watchIdRef = useRef<any>(null);
 
   // Connect to tracking socket
   const connectSocket = useCallback(async () => {
@@ -36,7 +43,8 @@ export function useLocationTracking({
     try {
       const token = await AsyncStorage.getItem('@FoodApp:token');
 
-      socketRef.current = io(BASE_URL, {
+      // Connect to /orders namespace which is where the backend gateway listens
+      socketRef.current = io(`${BASE_URL}/orders`, {
         path: '/socket.io',
         transports: ['websocket', 'polling'],
         auth: { token },
@@ -89,6 +97,13 @@ export function useLocationTracking({
 
   // Start location tracking
   const startTracking = useCallback(async () => {
+    // Check if Location module is available
+    if (!Location) {
+      console.warn('Location module not available');
+      setError('Location not available');
+      return false;
+    }
+
     try {
       // Request permissions
       const { status: foregroundStatus } = await Location.requestForegroundPermissionsAsync();
