@@ -2,7 +2,7 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import * as Location from 'expo-location';
 import { io, Socket } from 'socket.io-client';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { API_URL } from '../services/api';
+import { BASE_URL } from '../services/api';
 
 interface LocationData {
   latitude: number;
@@ -36,11 +36,9 @@ export function useLocationTracking({
     try {
       const token = await AsyncStorage.getItem('@FoodApp:token');
 
-      // Extract base URL without /api
-      const baseUrl = API_URL.replace('/api', '');
-
-      socketRef.current = io(`${baseUrl}/tracking`, {
-        transports: ['websocket'],
+      socketRef.current = io(BASE_URL, {
+        path: '/socket.io',
+        transports: ['websocket', 'polling'],
         auth: { token },
       });
 
@@ -99,10 +97,14 @@ export function useLocationTracking({
         return false;
       }
 
-      // Request background permissions for delivery tracking
-      const { status: backgroundStatus } = await Location.requestBackgroundPermissionsAsync();
-      if (backgroundStatus !== 'granted') {
-        console.warn('Background location permission not granted');
+      // Request background permissions for delivery tracking (may fail in Expo Go)
+      try {
+        const { status: backgroundStatus } = await Location.requestBackgroundPermissionsAsync();
+        if (backgroundStatus !== 'granted') {
+          console.warn('Background location permission not granted');
+        }
+      } catch (bgError) {
+        console.warn('Background location not available (requires development build):', bgError);
       }
 
       // Get initial location
