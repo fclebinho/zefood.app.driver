@@ -13,6 +13,7 @@ import api from '../services/api';
 import { Delivery } from '../types';
 import { useAuth } from '../hooks/useAuth';
 import { useLocationTracking } from '../hooks/useLocationTracking';
+import { DeliveryMapView } from '../components/DeliveryMapView';
 
 export function CurrentDeliveryScreen({ route, navigation }: any) {
   const { deliveryId } = route.params;
@@ -157,6 +158,22 @@ export function CurrentDeliveryScreen({ route, navigation }: any) {
     ? `${delivery.deliveryAddress.street || ''}, ${delivery.deliveryAddress.number || ''} - ${delivery.deliveryAddress.neighborhood || ''}, ${delivery.deliveryAddress.city || ''}`
     : 'Endereço não disponível';
 
+  // Prepare location data for map
+  const driverLocation = location ? {
+    latitude: location.latitude,
+    longitude: location.longitude,
+  } : undefined;
+
+  const restaurantLocation = delivery.restaurant?.latitude && delivery.restaurant?.longitude ? {
+    latitude: Number(delivery.restaurant.latitude),
+    longitude: Number(delivery.restaurant.longitude),
+  } : undefined;
+
+  const customerLocation = delivery.deliveryAddress?.latitude && delivery.deliveryAddress?.longitude ? {
+    latitude: Number(delivery.deliveryAddress.latitude),
+    longitude: Number(delivery.deliveryAddress.longitude),
+  } : undefined;
+
   return (
     <ScrollView style={styles.container}>
       {statusInfo && (
@@ -165,6 +182,15 @@ export function CurrentDeliveryScreen({ route, navigation }: any) {
           <Text style={styles.statusSubtitle}>{statusInfo.subtitle}</Text>
         </View>
       )}
+
+      <DeliveryMapView
+        driverLocation={driverLocation}
+        restaurantLocation={restaurantLocation}
+        customerLocation={customerLocation}
+        deliveryStatus={delivery.status}
+        restaurantName={delivery.restaurant?.name}
+        customerName={delivery.customer?.fullName}
+      />
 
       <View style={styles.section}>
         <Text style={styles.sectionTitle}>Restaurante</Text>

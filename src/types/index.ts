@@ -21,32 +21,44 @@ export interface Driver {
   totalEarnings: number;
 }
 
+export interface Restaurant {
+  id: string;
+  name: string;
+  phone?: string;
+  street?: string;
+  number?: string;
+  neighborhood?: string;
+  city?: string;
+  state?: string;
+  zipCode?: string;
+  latitude?: number;
+  longitude?: number;
+}
+
+export interface Customer {
+  fullName: string;
+  phone?: string;
+  user?: {
+    phone?: string;
+  };
+}
+
 export interface Delivery {
   id: string;
-  orderId: string;
-  status: 'PENDING' | 'ACCEPTED' | 'PICKED_UP' | 'DELIVERED' | 'CANCELLED';
-  pickupAddress: Address;
-  deliveryAddress: Address;
-  restaurant: {
-    id: string;
-    name: string;
-    phone?: string;
-  };
-  customer: {
-    fullName: string;
-    phone?: string;
-  };
-  order: {
-    id: string;
-    total: number;
-    items: OrderItem[];
-    paymentMethod: string;
-    notes?: string;
-  };
+  orderId?: string;
+  status: 'PENDING' | 'ACCEPTED' | 'PICKED_UP' | 'IN_TRANSIT' | 'DELIVERED' | 'CANCELLED';
+  pickupAddress?: Address;
+  deliveryAddress?: Address;
+  restaurant: Restaurant;
+  customer: Customer;
+  items?: any[];
+  total?: number;
+  paymentMethod?: string;
+  notes?: string;
   estimatedDistance?: number;
   estimatedTime?: number;
-  deliveryFee: number;
-  createdAt: string;
+  deliveryFee?: number;
+  createdAt?: string;
   acceptedAt?: string;
   pickedUpAt?: string;
   deliveredAt?: string;
