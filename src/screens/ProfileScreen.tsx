@@ -7,6 +7,19 @@ import {
   TouchableOpacity,
   Alert,
 } from 'react-native';
+import {
+  Star,
+  Phone,
+  CreditCard,
+  Bike,
+  Car,
+  Bell,
+  FileText,
+  HelpCircle,
+  ScrollText,
+  LogOut,
+  ChevronRight,
+} from 'lucide-react-native';
 import { useAuth } from '../hooks/useAuth';
 
 export function ProfileScreen() {
@@ -28,15 +41,16 @@ export function ProfileScreen() {
   };
 
   const getVehicleIcon = () => {
+    const iconProps = { size: 32, color: '#F97316' };
     switch (driver?.vehicleType) {
       case 'MOTORCYCLE':
-        return '🏍️';
+        return <Bike {...iconProps} />;
       case 'BICYCLE':
-        return '🚲';
+        return <Bike {...iconProps} />;
       case 'CAR':
-        return '🚗';
+        return <Car {...iconProps} />;
       default:
-        return '🛵';
+        return <Bike {...iconProps} />;
     }
   };
 
@@ -91,7 +105,10 @@ export function ProfileScreen() {
         {/* Stats */}
         <View style={styles.statsRow}>
           <View style={styles.statItem}>
-            <Text style={styles.statValue}>⭐ {Number(driver?.rating ?? 0).toFixed(1)}</Text>
+            <View style={styles.statValueRow}>
+              <Star size={20} color="#F7A922" fill="#F7A922" />
+              <Text style={styles.statValue}>{Number(driver?.rating ?? 0).toFixed(1)}</Text>
+            </View>
             <Text style={styles.statLabel}>Avaliação</Text>
           </View>
           <View style={styles.statDivider} />
@@ -107,12 +124,18 @@ export function ProfileScreen() {
 
           <View style={styles.infoCard}>
             <View style={styles.infoRow}>
-              <Text style={styles.infoLabel}>Telefone</Text>
+              <View style={styles.infoLabelRow}>
+                <Phone size={16} color="#666" />
+                <Text style={styles.infoLabel}>Telefone</Text>
+              </View>
               <Text style={styles.infoValue}>{driver?.phone || '-'}</Text>
             </View>
             <View style={styles.infoDivider} />
             <View style={styles.infoRow}>
-              <Text style={styles.infoLabel}>CPF</Text>
+              <View style={styles.infoLabelRow}>
+                <CreditCard size={16} color="#666" />
+                <Text style={styles.infoLabel}>CPF</Text>
+              </View>
               <Text style={styles.infoValue}>
                 {driver?.cpf?.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, '$1.$2.$3-$4') || '-'}
               </Text>
@@ -126,7 +149,9 @@ export function ProfileScreen() {
 
           <View style={styles.infoCard}>
             <View style={styles.vehicleRow}>
-              <Text style={styles.vehicleIcon}>{getVehicleIcon()}</Text>
+              <View style={styles.vehicleIconContainer}>
+                {getVehicleIcon()}
+              </View>
               <View>
                 <Text style={styles.vehicleType}>{getVehicleName()}</Text>
                 {driver?.vehiclePlate && (
@@ -143,33 +168,34 @@ export function ProfileScreen() {
 
           <View style={styles.menuCard}>
             <TouchableOpacity style={styles.menuItem}>
-              <Text style={styles.menuIcon}>📱</Text>
+              <Bell size={20} color="#666" />
               <Text style={styles.menuText}>Notificações</Text>
-              <Text style={styles.menuArrow}>›</Text>
+              <ChevronRight size={20} color="#ccc" />
             </TouchableOpacity>
             <View style={styles.menuDivider} />
             <TouchableOpacity style={styles.menuItem}>
-              <Text style={styles.menuIcon}>📄</Text>
+              <FileText size={20} color="#666" />
               <Text style={styles.menuText}>Documentos</Text>
-              <Text style={styles.menuArrow}>›</Text>
+              <ChevronRight size={20} color="#ccc" />
             </TouchableOpacity>
             <View style={styles.menuDivider} />
             <TouchableOpacity style={styles.menuItem}>
-              <Text style={styles.menuIcon}>❓</Text>
+              <HelpCircle size={20} color="#666" />
               <Text style={styles.menuText}>Ajuda</Text>
-              <Text style={styles.menuArrow}>›</Text>
+              <ChevronRight size={20} color="#ccc" />
             </TouchableOpacity>
             <View style={styles.menuDivider} />
             <TouchableOpacity style={styles.menuItem}>
-              <Text style={styles.menuIcon}>📋</Text>
+              <ScrollText size={20} color="#666" />
               <Text style={styles.menuText}>Termos de Uso</Text>
-              <Text style={styles.menuArrow}>›</Text>
+              <ChevronRight size={20} color="#ccc" />
             </TouchableOpacity>
           </View>
         </View>
 
         {/* Logout Button */}
         <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
+          <LogOut size={20} color="#EF4444" />
           <Text style={styles.logoutButtonText}>Sair da Conta</Text>
         </TouchableOpacity>
 
@@ -248,6 +274,11 @@ const styles = StyleSheet.create({
     width: 1,
     backgroundColor: '#eee',
   },
+  statValueRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+  },
   statValue: {
     fontSize: 24,
     fontWeight: 'bold',
@@ -278,6 +309,11 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
   },
+  infoLabelRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
   infoDivider: {
     height: 1,
     backgroundColor: '#eee',
@@ -296,8 +332,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
   },
-  vehicleIcon: {
-    fontSize: 40,
+  vehicleIconContainer: {
     marginRight: 16,
   },
   vehicleType: {
@@ -318,33 +353,29 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     padding: 16,
+    gap: 12,
   },
   menuDivider: {
     height: 1,
     backgroundColor: '#eee',
     marginLeft: 48,
   },
-  menuIcon: {
-    fontSize: 20,
-    marginRight: 12,
-  },
   menuText: {
     flex: 1,
     fontSize: 15,
     color: '#1a1a1a',
   },
-  menuArrow: {
-    fontSize: 20,
-    color: '#ccc',
-  },
   logoutButton: {
+    flexDirection: 'row',
     backgroundColor: '#fff',
     borderRadius: 12,
     padding: 16,
     alignItems: 'center',
+    justifyContent: 'center',
     borderWidth: 1,
     borderColor: '#EF4444',
     marginBottom: 16,
+    gap: 8,
   },
   logoutButtonText: {
     fontSize: 16,

@@ -4,6 +4,7 @@ import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { View, Text, ActivityIndicator, StyleSheet, ScrollView } from 'react-native';
+import { Home, Package, DollarSign, User } from 'lucide-react-native';
 import { AuthProvider, useAuth } from './src/hooks/useAuth';
 import {
   LoginScreen,
@@ -62,18 +63,19 @@ const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
 
 function TabIcon({ name, focused }: { name: string; focused: boolean }) {
-  const icons: Record<string, string> = {
-    Home: '🏠',
-    History: '📦',
-    Earnings: '💰',
-    Profile: '👤',
+  const color = focused ? '#F97316' : '#999';
+  const size = 24;
+
+  const icons: Record<string, React.ReactNode> = {
+    Home: <Home size={size} color={color} />,
+    History: <Package size={size} color={color} />,
+    Earnings: <DollarSign size={size} color={color} />,
+    Profile: <User size={size} color={color} />,
   };
 
   return (
     <View style={styles.tabIconContainer}>
-      <Text style={[styles.tabIcon, focused && styles.tabIconFocused]}>
-        {icons[name]}
-      </Text>
+      {icons[name]}
     </View>
   );
 }
@@ -218,12 +220,5 @@ const styles = StyleSheet.create({
   tabIconContainer: {
     alignItems: 'center',
     justifyContent: 'center',
-  },
-  tabIcon: {
-    fontSize: 24,
-    opacity: 0.6,
-  },
-  tabIconFocused: {
-    opacity: 1,
   },
 });
