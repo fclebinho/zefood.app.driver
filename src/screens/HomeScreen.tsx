@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useCallback, useRef } from 'react';
 import {
   View,
   Text,
@@ -19,6 +19,7 @@ import {
   Moon,
   AlertTriangle,
 } from 'lucide-react-native';
+import { useFocusEffect } from '@react-navigation/native';
 import { useAuth } from '../hooks/useAuth';
 import api from '../services/api';
 import { Delivery } from '../types';
@@ -29,6 +30,7 @@ import { useDriverSocket } from '../hooks/useOrdersSocket';
 export function HomeScreen({ navigation }: any) {
   const { driver, isOnline, toggleOnline } = useAuth();
   const [deliveries, setDeliveries] = useState<Delivery[]>([]);
+  const isFirstLoad = useRef(true); // Track if this is the first time loading
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [isTogglingOnline, setIsTogglingOnline] = useState(false);
 
@@ -67,6 +69,25 @@ export function HomeScreen({ navigation }: any) {
     onDeliveryTaken: handleDeliveryTaken,
   });
 
+  // Check for active delivery on mount
+  const checkActiveDelivery = useCallback(async () => {
+    try {
+      const response = await api.get('/drivers/deliveries/current');
+      if (response.data && response.data.id) {
+        // Driver has an active delivery, navigate to it
+        console.log('Found active delivery:', response.data.id);
+        navigation.navigate('CurrentDelivery', { deliveryId: response.data.id });
+        return true;
+      }
+    } catch (error: any) {
+      // 404 means no active delivery, which is fine
+      if (error.response?.status !== 404) {
+        console.error('Error checking active delivery:', error);
+      }
+    }
+    return false;
+  }, [navigation]);
+
   const fetchDeliveries = useCallback(async () => {
     if (!isOnline) {
       setDeliveries([]);
@@ -82,9 +103,24 @@ export function HomeScreen({ navigation }: any) {
     }
   }, [isOnline]);
 
-  useEffect(() => {
-    fetchDeliveries();
-  }, [fetchDeliveries]);
+  // Reload deliveries when screen gains focus
+  useFocusEffect(
+    useCallback(() => {
+      // Only auto-redirect to active delivery on first load
+      // This prevents infinite loop when user intentionally goes back
+      if (isFirstLoad.current) {
+        isFirstLoad.current = false;
+        checkActiveDelivery().then((hasActive) => {
+          if (!hasActive) {
+            fetchDeliveries();
+          }
+        });
+      } else {
+        // On subsequent focuses, just fetch available deliveries
+        fetchDeliveries();
+      }
+    }, [checkActiveDelivery, fetchDeliveries])
+  );
 
   const handleRefresh = async () => {
     setIsRefreshing(true);
@@ -101,6 +137,10 @@ export function HomeScreen({ navigation }: any) {
     } finally {
       setIsTogglingOnline(false);
     }
+  };
+
+  const handleViewDeliveryDetails = (delivery: Delivery) => {
+    navigation.navigate('DeliveryDetails', { delivery });
   };
 
   const handleAcceptDelivery = async (deliveryId: string) => {
@@ -120,7 +160,7 @@ export function HomeScreen({ navigation }: any) {
     });
   };
 
-  const renderDeliveryItem = ({ item }: { item: any }) => {
+  const renderDeliveryItem = ({ item }: { item: Delivery }) => {
     // Use restaurant address as pickup, deliveryAddress from order
     const pickupAddress = item.restaurant ?
       `${item.restaurant.street}, ${item.restaurant.number}` :
@@ -133,7 +173,7 @@ export function HomeScreen({ navigation }: any) {
     return (
       <TouchableOpacity
         style={styles.deliveryCard}
-        onPress={() => handleAcceptDelivery(item.id)}
+        onPress={() => handleViewDeliveryDetails(item)}
       >
         <View style={styles.deliveryHeader}>
           <Text style={styles.restaurantName}>{item.restaurant?.name || 'Restaurante'}</Text>

@@ -176,6 +176,11 @@ export function CurrentDeliveryScreen({ route, navigation }: any) {
 
   return (
     <ScrollView style={styles.container}>
+      {/* Header - no back button, driver must complete or cancel delivery */}
+      <View style={styles.header}>
+        <Text style={styles.headerTitle}>Entrega Atual</Text>
+      </View>
+
       {statusInfo && (
         <View style={[styles.statusBanner, { backgroundColor: statusInfo.color }]}>
           <Text style={styles.statusTitle}>{statusInfo.title}</Text>
@@ -316,6 +321,21 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#f5f5f5',
   },
+  header: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: 16,
+    paddingTop: 50,
+    paddingBottom: 12,
+    backgroundColor: '#fff',
+    borderBottomWidth: 1,
+    borderBottomColor: '#eee',
+  },
+  headerTitle: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: '#333',
+  },
   loadingContainer: {
     flex: 1,
     justifyContent: 'center',
@@ -324,7 +344,6 @@ const styles = StyleSheet.create({
   },
   statusBanner: {
     padding: 20,
-    paddingTop: 60,
     alignItems: 'center',
   },
   statusTitle: {

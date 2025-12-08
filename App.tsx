@@ -10,6 +10,7 @@ import {
   LoginScreen,
   HomeScreen,
   CurrentDeliveryScreen,
+  DeliveryDetailsScreen,
   HistoryScreen,
   EarningsScreen,
   ProfileScreen,
@@ -159,6 +160,11 @@ function AppNavigator() {
           <Stack.Screen
             name="CurrentDelivery"
             component={CurrentDeliveryScreen}
+            options={{ headerShown: false }}
+          />
+          <Stack.Screen
+            name="DeliveryDetails"
+            component={DeliveryDetailsScreen}
             options={{ headerShown: false }}
           />
         </>
