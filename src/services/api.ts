@@ -1,8 +1,10 @@
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-const BASE_URL = process.env.EXPO_PUBLIC_API_URL ?? 'http://localhost:3001';
-const API_URL = `${BASE_URL}/api`;
+// API URL - já inclui /api se necessário
+const API_URL = process.env.EXPO_PUBLIC_API_URL ?? 'http://localhost:3001/api';
+// Base URL para WebSocket (sem /api)
+const BASE_URL = API_URL.replace(/\/api$/, '');
 
 // Debug log
 console.log('API Configuration:', { BASE_URL, API_URL });
