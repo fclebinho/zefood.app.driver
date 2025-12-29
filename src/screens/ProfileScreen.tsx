@@ -21,6 +21,7 @@ import {
   ChevronRight,
 } from 'lucide-react-native';
 import { useAuth } from '../hooks/useAuth';
+import packageJson from '../../package.json';
 
 export function ProfileScreen() {
   const { user, driver, logout } = useAuth();
@@ -199,7 +200,7 @@ export function ProfileScreen() {
           <Text style={styles.logoutButtonText}>Sair da Conta</Text>
         </TouchableOpacity>
 
-        <Text style={styles.version}>Versão 1.0.0</Text>
+        <Text style={styles.version}>ZeFood Driver v{packageJson.version}</Text>
       </View>
     </ScrollView>
   );
