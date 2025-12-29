@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import React, { createContext, useContext, useState, useEffect, ReactNode, useCallback } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import api from '../services/api';
 import { User, Driver } from '../types';
@@ -23,6 +23,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [isLoading, setIsLoading] = useState(true);
   const [isOnline, setIsOnline] = useState(false);
 
+  // Clear auth state (called on 401 errors)
+  const clearAuth = useCallback(async () => {
+    await AsyncStorage.multiRemove(['token', 'refreshToken', 'user']);
+    setUser(null);
+    setDriver(null);
+    setIsOnline(false);
+  }, []);
+
   useEffect(() => {
     loadStoredAuth();
   }, []);
@@ -35,17 +43,22 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       ]);
 
       if (token && storedUser) {
-        const parsedUser = JSON.parse(storedUser);
-        setUser(parsedUser);
-
-        // Fetch driver profile
-        const response = await api.get('/drivers/me');
-        setDriver(response.data);
-        setIsOnline(response.data.isOnline);
+        // Validate token by fetching driver profile
+        try {
+          const response = await api.get('/drivers/me');
+          const parsedUser = JSON.parse(storedUser);
+          setUser(parsedUser);
+          setDriver(response.data);
+          setIsOnline(response.data.isOnline);
+        } catch (error: any) {
+          // Token is invalid or expired - clear everything
+          console.log('Token invalid, clearing auth');
+          await clearAuth();
+        }
       }
     } catch (error) {
       console.error('Error loading auth:', error);
-      await AsyncStorage.multiRemove(['token', 'user']);
+      await clearAuth();
     } finally {
       setIsLoading(false);
     }
@@ -78,12 +91,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   };
 
-  const logout = async () => {
-    await AsyncStorage.multiRemove(['token', 'refreshToken', 'user']);
-    setUser(null);
-    setDriver(null);
-    setIsOnline(false);
-  };
+  const logout = useCallback(async () => {
+    await clearAuth();
+  }, [clearAuth]);
 
   const toggleOnline = async () => {
     const response = await api.patch('/drivers/status', {
